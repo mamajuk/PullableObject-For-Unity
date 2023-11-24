@@ -1,2 +1,4 @@
 # PullableObject
-Unity C# components implemented with pull function
+## Overview
+```PullableObject```는 시작 위치가 고정된 줄의 형태를 이루는 연속적인 ```Transform```을 조작하여, 줄이 펴지거나 끊어지는 움직임이 구현된 컴포넌트입니다. **Unity Editor Inspector** 에서 줄의 형태를 이루는 연속적인 ```Transform``` 을 조작하여 손쉽게 임의의 복잡하게 꼬여있는 줄을 구성할 수 있는 인터페이스를 제공합니다.
+스크립팅 레벨 또는 인스펙터에서 줄의 상태에 따른 유연한 확장을 할 수 있도록 줄이 당겨지기 **시작했을 때**, **끊어졌을 때**, **펴졌을 때** 와 같은 줄의 상태 변화시에 호출되는 각종 대리자를 제공합니다. ```PullableObject``` 는 런타임에 별도로 줄을 표시하는 기능을 제공하지 않으며, 단순히 줄을 구성하는 ```Transform``` 들을 조작하는 기능만을 제공합니다. 만약 메시의 본들의 ```Transform``` 으로 줄을 구성하였을 경우, 메시가 꼬이는 ```캔디랩( Candy wrap )``` 현상이 발생할 수 있음을 고려하여야 합니다. 다음은 ```PullableObject```가 적용된 예시를 보여줍니다. 
