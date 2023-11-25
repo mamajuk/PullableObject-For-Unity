@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using IPariUtility;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -1017,7 +1016,7 @@ public sealed class PullableObject : MonoBehaviour
         ref BoneData nextBone = ref _datas[applyIndex+1];
 
         Vector3 bone2Target = (target - bone.OriginPos).normalized;
-        Quaternion rotQuat  = IpariUtility.GetQuatBetweenVector(bone.originDir, bone2Target);
+        Quaternion rotQuat  = GetQuatBetweenVector(bone.originDir, bone2Target);
 
         bone.Tr.position        = target + bone2Target*(-bone.originLength);
         bone.Tr.rotation        = (rotQuat*bone.OriginQuat);
@@ -1126,10 +1125,10 @@ public sealed class PullableObject : MonoBehaviour
                 ref BoneData curr = ref _datas[i];
                 ref BoneData next = ref _datas[i+1];
 
-                Vector3 currBezier = IpariUtility.GetBezier(ref a, ref cp, ref b, ratio);
-                Vector3 nextBezier = IpariUtility.GetBezier(ref a, ref cp, ref b, (ratio += curr.lengthRatio));
+                Vector3 currBezier = GetBezier(ref a, ref cp, ref b, ratio);
+                Vector3 nextBezier = GetBezier(ref a, ref cp, ref b, (ratio += curr.lengthRatio));
                 Vector3 curr2Next  = (nextBezier-currBezier).normalized;
-                Quaternion rotQuat = IpariUtility.GetQuatBetweenVector(curr.originDir, curr2Next);
+                Quaternion rotQuat = GetQuatBetweenVector(curr.originDir, curr2Next);
 
                 next.Tr.position = nextBezier;
                 curr.Tr.rotation = (rotQuat * curr.OriginQuat);
@@ -1168,7 +1167,7 @@ public sealed class PullableObject : MonoBehaviour
             ref BoneData next = ref _datas[i + 1];
 
             Vector3 currDir    = (next.Tr.position - curr.Tr.position).normalized;
-            Quaternion rotQuat = IpariUtility.GetQuatBetweenVector(currDir, curr.originDir, delta);
+            Quaternion rotQuat = GetQuatBetweenVector(currDir, curr.originDir, delta);
 
             curr.Tr.position +=  (curr.OriginPos - curr.Tr.position) * delta;
             curr.Tr.rotation =  (rotQuat * curr.Tr.rotation);
@@ -1289,6 +1288,33 @@ public sealed class PullableObject : MonoBehaviour
         #endregion
     }
 
+    private Vector3 GetBezier(ref Vector3 s, ref Vector3 c, ref Vector3 d, float w = 0f)
+    {
+        #region Omit
+        Vector3 sc = (c - s);
+        Vector3 cd = (d - c);
+
+        Vector3 a2 = s + (sc * w);
+        Vector3 b2 = c + (cd * w);
+        Vector3 c2 = (b2 - a2);
+
+        return a2 + (c2 * w);
+        #endregion
+    }
+
+    private Quaternion GetQuatBetweenVector(Vector3 from, Vector3 to, float ratio = 1f)
+    {
+        #region Omit
+
+        /********************************************
+         *   주어진 두 벡터사이의 쿼터니언 값을 계산한다...
+         * ***/
+        float angle   = Vector3.Angle(from, to) * ratio;
+        Vector3 cross = Vector3.Cross(from, to);
+        return Quaternion.AngleAxis(angle, cross);
+        #endregion
+    }
+
 
 
 
@@ -1367,7 +1393,7 @@ public sealed class PullableObject : MonoBehaviour
             if (_datas[i].Tr == null) continue;
             
             ref BoneData currBone = ref _datas[i];
-            Quaternion   rotQut   = IpariUtility.GetQuatBetweenVector(currBone.originDir, rootDir);
+            Quaternion   rotQut   = GetQuatBetweenVector(currBone.originDir, rootDir);
             currBone.Tr.rotation  = (rotQut * currBone.OriginQuat);
         }
         #endregion
