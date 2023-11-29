@@ -117,6 +117,7 @@ public sealed class PullableObject : MonoBehaviour
         private SerializedProperty UseFixedMaxLengthProperty;
         private SerializedProperty FixedMaxLengthProperty;
         private SerializedProperty EventFlagsProperty;
+        private SerializedProperty LineRendererProperty;
 
 
         //=====================================================
@@ -285,7 +286,7 @@ public sealed class PullableObject : MonoBehaviour
 
             GUI_ShowStrechVibe();
 
-            GUI_ShowFixedMaxLength();
+            //GUI_ShowFixedMaxLength();
 
             EditorGUILayout.Space(10f);
 
@@ -351,6 +352,7 @@ public sealed class PullableObject : MonoBehaviour
                 OnFullyExtendedProperty          = serializedObject.FindProperty("OnFullyExtended");
                 OnPullStartProperty              = serializedObject.FindProperty("OnPullStart");
                 OnBreakProperty                  = serializedObject.FindProperty("OnBreak");
+                LineRendererProperty             = serializedObject.FindProperty("_LineRenderer");
             }
 
             /**스타일 룩업테이블 초기화....*/
@@ -514,11 +516,15 @@ public sealed class PullableObject : MonoBehaviour
         private void GUI_ShowGrabTarget()
         {
             #region Omit
-            if (GrabTargetProperty == null) return;
+            if (GrabTargetProperty == null || LineRendererProperty==null) return;
 
             /**IK적용 여부...*/
             ApplyUpdateProperty.boolValue = EditorGUILayout.Toggle("Apply Update", ApplyUpdateProperty.boolValue);
 
+
+            /**********************************************************
+             *   잡는 지점을 나타내는 GameObject의 참조필드를 표시한다...
+             * ****/
             EditorGUILayout.BeginHorizontal();
             {
                 /**GrabTarget 참조필드...*/
@@ -530,6 +536,17 @@ public sealed class PullableObject : MonoBehaviour
 
             }
             EditorGUILayout.EndHorizontal();
+
+
+            /***************************************************
+             *   라인 랜더러의 참조필드를 표시한다....
+             * ****/
+            using (var scope = new EditorGUI.ChangeCheckScope()){
+
+                Object value = EditorGUILayout.ObjectField("Line Renderer", LineRendererProperty.objectReferenceValue, typeof(LineRenderer), true);
+                if (scope.changed) LineRendererProperty.objectReferenceValue = value;
+            }
+
 
             #endregion
         }
@@ -715,7 +732,7 @@ public sealed class PullableObject : MonoBehaviour
         [System.NonSerialized] public float     lengthRatio;
     }
     #endregion
-    
+
     //=========================================
     /////            Property             /////
     //=========================================
@@ -815,7 +832,6 @@ public sealed class PullableObject : MonoBehaviour
 
                     _fullyExtendedLen = 5f;
                     _fullyExtendedDiv = (1f / _fullyExtendedLen);
-
                 }
             }
             else
@@ -831,6 +847,21 @@ public sealed class PullableObject : MonoBehaviour
             }
         }
     }
+    public LineRenderer LineRenderer
+    {
+        get { return _LineRenderer; }
+        set
+        {
+            _LineRenderer = value;
+            
+            /**라인 랜더러가 유효할 경우 개수를 갱신한다....*/
+            if(_LineRenderer!=null)
+            {
+                _LineRenderer.positionCount = _dataCount;
+                _LineRenderer.useWorldSpace = true;
+            }
+        }
+    }
 
     [SerializeField] public float            MaxScale          = 1.5f;
     [SerializeField] public float            StrechVibePow     = 3f;
@@ -838,7 +869,8 @@ public sealed class PullableObject : MonoBehaviour
     [SerializeField] public bool             UseFixedVibe      = false;
     [SerializeField] public bool             UseFixedMaxLength = false;
     [SerializeField] public bool             ApplyUpdate       = true;
-    [SerializeField] private GameObject       _GrabTarget; 
+    [SerializeField] private GameObject       _GrabTarget;
+    [SerializeField] private LineRenderer     _LineRenderer;
     [SerializeField] public  PullableObjEvent OnPullRelease;
     [SerializeField] public  PullableObjEvent OnBreak;
     [SerializeField] public  PullableObjEvent OnPullStart;
@@ -896,7 +928,8 @@ public sealed class PullableObject : MonoBehaviour
 
         Init(true, ApplyUpdate);
 
-        _awakeInit = true;
+        LineRenderer = _LineRenderer;
+        _awakeInit   = true;
         #endregion
     }
 
@@ -917,6 +950,7 @@ public sealed class PullableObject : MonoBehaviour
                 UpdateLookAtTarget(HoldingPoint.transform.position);
             }
 
+            UpdateLineRenderer();
             OnLateUpdate?.Invoke();
             return;
         }
@@ -933,6 +967,7 @@ public sealed class PullableObject : MonoBehaviour
             UpdateExtendedRestore();
         }
 
+        UpdateLineRenderer();
         OnLateUpdate?.Invoke();
         #endregion
     }
@@ -1244,7 +1279,7 @@ public sealed class PullableObject : MonoBehaviour
     private void Init(bool Apply, bool unpackParent=true)
     {
         #region Omit
-        if (Apply == false) return;
+        if (Apply == false || _awakeInit) return;
         
         _fullyExtendedLen = MaxLength;
         _fullyExtendedDiv = (1f / _fullyExtendedLen);
@@ -1315,6 +1350,25 @@ public sealed class PullableObject : MonoBehaviour
         #endregion
     }
 
+    private void UpdateLineRenderer()
+    {
+        #region Omit
+
+        /***************************************************
+         *   라인랜더러의 참조가 유효할 경우 위치를 갱신합니다.
+         * ****/
+        if (LineRenderer == null) return;
+
+        LineRenderer.positionCount = _dataCount;
+
+        for(int i=0; i<_dataCount; i++){
+
+            ref BoneData data = ref _datas[i];
+            LineRenderer.SetPosition(i, data.Tr.position);
+        }
+
+        #endregion
+    }
 
 
 
@@ -1488,29 +1542,41 @@ public sealed class PullableObject : MonoBehaviour
         #endregion
     }
 
-    public void GetBonePositionAndDirFromLength(float length, out Vector3 outPos, out Vector3 outDir)
+    public void GetNearBonePositionAndDir(Vector3 Position, out Vector3 outPos, out Vector3 outDir)
     {
         #region Omit
-        for (int i = 0; i < _dataCount; i++)
-        {
-            ref BoneData data = ref _datas[i];
+        /**본 정보가 유효하지 않다면 스킵한다....*/
+        if(_dataCount<2){
 
-            /**해당 본의 길이를 반환한다....*/
-            if (length <= data.originLength){
-
-                Vector3 dataDir = GetBoneDir(i);
-                float lenRatio = (length * data.originLengthDiv);
-
-                outPos = data.Tr.position + (dataDir * lenRatio * data.originLength);
-                outDir = dataDir;
-                return;
-            }
-
-            length -= data.originLength;
+            outPos = outDir = Vector3.zero;
+            return;
         }
 
-        outPos = Vector3.zero;
-        outDir = Vector3.zero;
+        int   selectIdx = 0;
+        float selectDst = float.MaxValue;
+
+        /****************************************
+         *   가장 근접한 본을 검색한다......
+         * *****/
+        for(int i=0; i<_dataCount-1; i++){
+
+            ref BoneData data = ref _datas[i];
+            float        dst  = (Position - data.Tr.position).sqrMagnitude;
+
+            /**가장 근접한 인덱스를 선택한다...*/
+            if(dst < selectDst)
+            {
+                selectIdx = i;
+                selectDst = dst;
+            }
+        }
+
+        /**가장 근접한 위치의 본을 반환한다...*/
+        ref BoneData result    = ref _datas[selectIdx];
+        ref BoneData resultDir = ref _datas[selectIdx+1];
+
+        outPos = result.Tr.position;
+        outDir = (resultDir.Tr.position - outPos).normalized;
         #endregion
     }
 }
