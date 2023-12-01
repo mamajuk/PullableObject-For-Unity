@@ -1496,53 +1496,71 @@ public sealed class PullableObject : MonoBehaviour
         #endregion
     }
 
-    public Vector3 GetBonePositionFromLength(float length)
+    public Vector3 GetNearBonePosition(Vector3 position)
     {
         #region Omit
-        for(int i=0; i<_dataCount; i++)
+        int   selectIdx = 0;
+        float selectDst = float.MaxValue;
+
+        /****************************************
+         *   가장 근접한 본을 검색한다......
+         * *****/
+        for (int i = 0; i < _dataCount - 1; i++)
         {
+
             ref BoneData data = ref _datas[i];
+            float dst = (position - data.Tr.position).sqrMagnitude;
 
-            /**해당 본의 길이를 반환한다....*/
-            if(length<=data.originLength){
-
-                Vector3 dataDir = GetBoneDir(i);
-                float lenRatio  = (length * data.originLengthDiv);
-
-                return data.Tr.position + (dataDir * lenRatio * data.originLength);
+            /**가장 근접한 인덱스를 선택한다...*/
+            if (dst < selectDst)
+            {
+                selectIdx = i;
+                selectDst = dst;
             }
-
-            length -= data.originLength;
         }
 
-        return Vector3.zero;
+        /**가장 근접한 위치의 본을 반환한다...*/
+        ref BoneData result = ref _datas[selectIdx];
+
+        return result.Tr.position;
         #endregion
     }
 
-    public Vector3 GetBoneDirFromLength(float length)
+    public Vector3 GetNearBoneDir(Vector3 position)
     {
         #region Omit
-        for (int i = 0; i < _dataCount; i++)
-        {
+        /**본 정보가 유효하지 않다면 스킵한다....*/
+        if (_dataCount < 2)
+            return Vector3.zero; 
+
+        int   selectIdx   = 0;
+        float selectDst   = float.MaxValue;
+
+        /****************************************
+         *   가장 근접한 본을 검색한다......
+         * *****/
+        for (int i = 0; i < _dataCount - 1; i++){
+
             ref BoneData data = ref _datas[i];
+            float dst         = (position - data.Tr.position).sqrMagnitude;
 
-            /**해당 본의 길이를 반환한다....*/
-            if (length <= data.originLength){
-
-                Vector3 dataDir = GetBoneDir(i);
-                float lenRatio = (length * data.originLengthDiv);
-
-                return dataDir;
+            /**가장 근접한 인덱스를 선택한다...*/
+            if (dst < selectDst)
+            {
+                selectIdx = i;
+                selectDst = dst;
             }
-
-            length -= data.originLength;
         }
 
-        return Vector3.zero;
+        /**가장 근접한 위치의 본을 반환한다...*/
+        ref BoneData result = ref _datas[selectIdx];
+        ref BoneData resultDir = ref _datas[selectIdx + 1];
+
+        return (resultDir.Tr.position - result.Tr.position).normalized;
         #endregion
     }
 
-    public void GetNearBonePositionAndDir(Vector3 Position, out Vector3 outPos, out Vector3 outDir)
+    public void GetNearBonePositionAndDir(Vector3 position, out Vector3 outPos, out Vector3 outDir)
     {
         #region Omit
         /**본 정보가 유효하지 않다면 스킵한다....*/
@@ -1561,7 +1579,7 @@ public sealed class PullableObject : MonoBehaviour
         for(int i=0; i<_dataCount-1; i++){
 
             ref BoneData data = ref _datas[i];
-            float        dst  = (Position - data.Tr.position).sqrMagnitude;
+            float        dst  = (position - data.Tr.position).sqrMagnitude;
 
             /**가장 근접한 인덱스를 선택한다...*/
             if(dst < selectDst)
