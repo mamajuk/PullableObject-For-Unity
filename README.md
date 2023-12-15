@@ -1,5 +1,5 @@
 # PullableObject
-[![class_reference](https://img.shields.io/badge/class_reference-https%3A%2F%2Fbramble--route--61a.notion.site%2FUnity--C--PullableObject--07d6fa3a84aa4084aab64114ec633d18%3Fpvs%3D4-green)]([https://bramble-route-61a.notion.site/Unity-C-FModAudioManager-e3837f0765fe4254aa40a0156d050288?pvs=4](https://bramble-route-61a.notion.site/Unity-C-PullableObject-07d6fa3a84aa4084aab64114ec633d18?pvs=4))
+[![class_reference](https://img.shields.io/badge/class_reference-https%3A%2F%2Fbramble--route--61a.notion.site%2FUnity--C--PullableObject--07d6fa3a84aa4084aab64114ec633d18%3Fpvs%3D4-green)](https://bramble-route-61a.notion.site/Unity-C-PullableObject-07d6fa3a84aa4084aab64114ec633d18?pvs=4))
 
 ## Overview
 ```PullableObject```는 시작 위치가 고정된 줄의 형태를 이루는 연속적인 ```Transform```을 조작하여, 줄이 펴지거나 끊어지는 움직임이 구현된 컴포넌트입니다. <br>**Unity Editor Inspector** 에서 줄의 형태를 이루는 연속적인 ```Transform``` 을 조작하여 손쉽게 임의의 복잡하게 꼬여있는 줄을 구성할 수 있는 인터페이스를 제공하며 스크립팅 레벨 또는 인스펙터에서 줄의 상태에 따른 유연한 확장을 할 수 있도록 줄이 당겨지기 **시작했을 때**, **끊어졌을 때**, **펴졌을 때** 와 같은 줄의 상태 변화시에 호출되는 각종 대리자를 제공합니다.<br> 
