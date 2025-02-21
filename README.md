@@ -10,7 +10,7 @@
 ## Tutorial
 
 <table><tr>
-<td><img width="400px" img src="https://github.com/mamajuk/PullableObject-For-Unity/blob/main/readmy_resources/readmy_image(1).png?raw=true"></td>
+<td><img width="400px" height="400px" img src="https://github.com/mamajuk/PullableObject-For-Unity/blob/main/readmy_resources/readmy_image(1).png?raw=true"></td>
 <td><img width="800px" height="400px" img src="https://github.com/mamajuk/PullableObject-For-Unity/blob/main/readmy_resources/readmy_image(3).png?raw=true"></td>
 </tr></table>
 
