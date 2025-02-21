@@ -127,14 +127,14 @@ public sealed class PullableObject : MonoBehaviour
         {
             #region Omit
             if (targetObj == null) return;
-            if (targetObj._datas==null) return;
-            if (targetObj._datas.Length==0) return;
+            if (targetObj._BoneData==null) return;
+            if (targetObj._BoneData.Length==0) return;
 
 
             /**********************************************
              *   모든 본들을 표시한다.
              * ***/
-            BoneData[]  datas = targetObj._datas;
+            BoneData[]  datas = targetObj._BoneData;
             int         Count = datas.Length;
 
             Handles.BeginGUI();
@@ -338,7 +338,7 @@ public sealed class PullableObject : MonoBehaviour
             if(targetObj==null){
 
                 targetObj                       = (target as PullableObject);
-                dataListProperty                = serializedObject.FindProperty("_datas");
+                dataListProperty                = serializedObject.FindProperty("_BoneData");
                 GrabTargetProperty              = serializedObject.FindProperty("_GrabTarget");
                 BreakLengthRatioProperty        = serializedObject.FindProperty("MaxScale");
                 ApplyUpdateProperty             = serializedObject.FindProperty("ApplyUpdate");
@@ -435,18 +435,18 @@ public sealed class PullableObject : MonoBehaviour
         private void GUI_ShowResetRotateButton()
         {
             #region Omit
-            if (targetObj == null || targetObj._datas==null) return;
+            if (targetObj == null || targetObj._BoneData==null) return;
 
             /*************************************
              *   모든 본의 회전량을 초기화한다.
              * ***/
             if(GUILayout.Button("Reset all bones rotation"))
             {
-                int Count        = targetObj._datas.Length;
-                BoneData[] datas = targetObj._datas;
-                if (targetObj._datas.Length == 0 || targetObj._datas[0].Tr==null) return;
+                int Count        = targetObj._BoneData.Length;
+                BoneData[] datas = targetObj._BoneData;
+                if (targetObj._BoneData.Length == 0 || targetObj._BoneData[0].Tr==null) return;
 
-                Undo.RegisterChildrenOrderUndo(targetObj._datas[0].Tr, "Changed All bones transform");
+                Undo.RegisterChildrenOrderUndo(targetObj._BoneData[0].Tr, "Changed All bones transform");
                 for (int i=1; i<Count; i++){
 
                     if (datas[i].Tr == null) continue;
@@ -462,7 +462,7 @@ public sealed class PullableObject : MonoBehaviour
             #region Omit
             if (dataListProperty == null) return;
 
-            if(GUILayout.Button("Add Children Bones By RootBone"))
+            if(GUILayout.Button("Add all child bones under the RootBone"))
             {
                 if(dataListProperty.arraySize==0){
 
@@ -470,7 +470,7 @@ public sealed class PullableObject : MonoBehaviour
                     return;
                 }
 
-                if (targetObj._datas[0].Tr==null){
+                if (targetObj._BoneData[0].Tr==null){
 
                     Debug.LogError("RootBone transform is not valid!");
                     return;
@@ -484,7 +484,7 @@ public sealed class PullableObject : MonoBehaviour
                 dataListProperty.arraySize = 1;
 
 
-                Transform parent = targetObj._datas[0].Tr;
+                Transform parent = targetObj._BoneData[0].Tr;
                 Transform result;
 
                 /**나머지 자식 본들을 추가한다....*/
@@ -746,11 +746,11 @@ public sealed class PullableObject : MonoBehaviour
             if(_fullyExtendedLen>0f && IsValid) return _fullyExtendedLen;
 
             float len = 0f;
-            int Count = (!_awakeInit? _datas.Length:_dataCount);
+            int Count = (!_awakeInit? _BoneData.Length:_dataCount);
 
             for (int i = 1; i < Count; i++){
 
-                len += (_datas[i].Tr.position - _datas[i - 1].Tr.position).magnitude;
+                len += (_BoneData[i].Tr.position - _BoneData[i - 1].Tr.position).magnitude;
             }
             _cachedMaxLength = _fullyExtendedLen = len;
 
@@ -761,12 +761,12 @@ public sealed class PullableObject : MonoBehaviour
     {
         get
         {
-            if (HoldingPoint == null || _datas == null || _datas.Length == 0 || _datas[0].Tr == null){
+            if (HoldingPoint == null || _BoneData == null || _BoneData.Length == 0 || _BoneData[0].Tr == null){
 
                 return 0f;
             }
 
-            float Root2Target = (HoldingPoint.transform.position - _datas[0].Tr.position).magnitude;
+            float Root2Target = (HoldingPoint.transform.position - _BoneData[0].Tr.position).magnitude;
 
             /**최대길이 연산자가 초기화되지않았다면 초기화.*/
             if(_fullyExtendedDiv<0) {
@@ -781,12 +781,12 @@ public sealed class PullableObject : MonoBehaviour
     {
         get
         {
-            if (HoldingPoint == null || _datas == null || _datas.Length == 0 || _datas[0].Tr == null){
+            if (HoldingPoint == null || _BoneData == null || _BoneData.Length == 0 || _BoneData[0].Tr == null){
 
                 return 0f;
             }
 
-            return (HoldingPoint.transform.position - _datas[0].Tr.position).magnitude;
+            return (HoldingPoint.transform.position - _BoneData[0].Tr.position).magnitude;
         }
     }
     public bool         IsBroken            { get; private set; } = false;
@@ -797,23 +797,23 @@ public sealed class PullableObject : MonoBehaviour
     {
         get
         {
-            if(_datas == null || _datas.Length == 0 || _datas[0].Tr == null) 
+            if(_BoneData == null || _BoneData.Length == 0 || _BoneData[0].Tr == null) 
                 return Vector3.zero;
 
-            return _datas[0].Tr.position;
+            return _BoneData[0].Tr.position;
         }
     }
     public Vector3      EndPosition
     {
         get
         {
-            bool dataIsNull = (_datas == null);
-            bool dataIsEmpty = (_datas.Length == 0);
-            bool IndexOneIsNull = (_datas[_dataCount - 1].Tr == null);
+            bool dataIsNull = (_BoneData == null);
+            bool dataIsEmpty = (_BoneData.Length == 0);
+            bool IndexOneIsNull = (_BoneData[_dataCount - 1].Tr == null);
 
-            if (_datas == null || _datas.Length == 0 || _datas[_dataCount - 2].Tr == null) return Vector3.zero;
+            if (_BoneData == null || _BoneData.Length == 0 || _BoneData[_dataCount - 2].Tr == null) return Vector3.zero;
 
-            return _datas[_dataCount-2].Tr.position;
+            return _BoneData[_dataCount-2].Tr.position;
         }
     }
     public GameObject   HoldingPoint 
@@ -884,7 +884,7 @@ public sealed class PullableObject : MonoBehaviour
     //////            Fields            /////
     //=======================================
     [SerializeField, HideInInspector] 
-    private BoneData[] _datas;
+    private BoneData[] _BoneData;
 
     [SerializeField, HideInInspector]
     private int        _dataCount = -1;
@@ -1008,7 +1008,7 @@ public sealed class PullableObject : MonoBehaviour
 
         for (int i=_dataCount-3; i >= 0; i--){
 
-            ref BoneData next = ref _datas[i + 1];
+            ref BoneData next = ref _BoneData[i + 1];
             ApplyForwardIK(i, next.Tr.position);
         }
 
@@ -1016,7 +1016,7 @@ public sealed class PullableObject : MonoBehaviour
         /****************************************************
          *   루트본이 원래 위치에 최대한 가깝게 이동하도록 보간...
          * ***/
-        ref BoneData rootBone     = ref _datas[0];
+        ref BoneData rootBone     = ref _BoneData[0];
         Transform    targetTr     = HoldingPoint.transform;
 
         int   leftCount     = _fabrikLimit;
@@ -1030,7 +1030,7 @@ public sealed class PullableObject : MonoBehaviour
 
             for(int i=1; i<_dataCount-1; i++){
 
-                ref BoneData prev = ref _datas[i-1];
+                ref BoneData prev = ref _BoneData[i-1];
                 ApplyBackwardIK(i, prev.Tr.position);
             }
 
@@ -1040,15 +1040,15 @@ public sealed class PullableObject : MonoBehaviour
         LastBone2GrabSolver();
 
         /**마지막 위치를 기록한다...*/
-        _lastExtendedLen = (HoldingPoint.transform.position - _datas[0].Tr.position).magnitude;
+        _lastExtendedLen = (HoldingPoint.transform.position - _BoneData[0].Tr.position).magnitude;
         #endregion
     }
 
     private void ApplyForwardIK(int applyIndex, Vector3 target)
     {
         #region Omit
-        ref BoneData bone     = ref _datas[applyIndex];
-        ref BoneData nextBone = ref _datas[applyIndex+1];
+        ref BoneData bone     = ref _BoneData[applyIndex];
+        ref BoneData nextBone = ref _BoneData[applyIndex+1];
 
         Vector3 bone2Target = (target - bone.OriginPos).normalized;
         Quaternion rotQuat  = GetQuatBetweenVector(bone.originDir, bone2Target);
@@ -1061,8 +1061,8 @@ public sealed class PullableObject : MonoBehaviour
     private void ApplyBackwardIK(int applyIndex, Vector3 target)
     {
         #region Omit
-        ref BoneData bone = ref _datas[applyIndex];
-        ref BoneData next = ref _datas[applyIndex+1];
+        ref BoneData bone = ref _BoneData[applyIndex];
+        ref BoneData next = ref _BoneData[applyIndex+1];
 
         Vector3 bone2Target = (target-bone.Tr.position).normalized;
         bone.Tr.position    = target + (bone2Target * -bone.originLength);
@@ -1078,16 +1078,16 @@ public sealed class PullableObject : MonoBehaviour
          * ***/
         if (HoldingPoint == null) return;
 
-        ref BoneData lastData = ref _datas[_dataCount - 1];
+        ref BoneData lastData = ref _BoneData[_dataCount - 1];
         Vector3      grabPos  = HoldingPoint.transform.position;
         float last2TargetLen  = (grabPos - lastData.Tr.position).magnitude;
         float        partLen  = (last2TargetLen * _boneCountDiv);   
 
         for(int i=1; i<_dataCount-1; i++)
         {
-            ref BoneData curr = ref _datas[i];
-            ref BoneData prev = ref _datas[i-1];
-            ref BoneData next = ref _datas[i + 1];
+            ref BoneData curr = ref _BoneData[i];
+            ref BoneData prev = ref _BoneData[i-1];
+            ref BoneData next = ref _BoneData[i + 1];
 
             Vector3 prev2CurrDir = (curr.Tr.position - prev.Tr.position).normalized;
             curr.Tr.position = prev.Tr.position + (prev2CurrDir * (prev.originLength+partLen));
@@ -1101,7 +1101,7 @@ public sealed class PullableObject : MonoBehaviour
         #region Omit
         if (HoldingPoint == null) return false;
 
-        float root2TargetLen  = (HoldingPoint.transform.position - _datas[0].Tr.position).magnitude;
+        float root2TargetLen  = (HoldingPoint.transform.position - _BoneData[0].Tr.position).magnitude;
         float extendedRatio   = (root2TargetLen * _fullyExtendedDiv);
 
         /****************************************
@@ -1135,8 +1135,8 @@ public sealed class PullableObject : MonoBehaviour
              * ***/
 
             /**계산에 참조할 본들의 참조를 구한다...*/
-            ref BoneData root    = ref _datas[0];
-            ref BoneData last    = ref _datas[_dataCount-1];
+            ref BoneData root    = ref _BoneData[0];
+            ref BoneData last    = ref _BoneData[_dataCount-1];
 
             /**당겨지는 방향의 업벡터를 이용하여 배지어 제어점들을 구한다...*/
             Vector3 forward       = (HoldingPoint.transform.position - root.OriginPos);
@@ -1157,8 +1157,8 @@ public sealed class PullableObject : MonoBehaviour
             int   count = (_dataCount - 1);
             for(int i=0; i<count; i++)
             {
-                ref BoneData curr = ref _datas[i];
-                ref BoneData next = ref _datas[i+1];
+                ref BoneData curr = ref _BoneData[i];
+                ref BoneData next = ref _BoneData[i+1];
 
                 Vector3 currBezier = GetBezier(ref a, ref cp, ref b, ratio);
                 Vector3 nextBezier = GetBezier(ref a, ref cp, ref b, (ratio += curr.lengthRatio));
@@ -1180,7 +1180,7 @@ public sealed class PullableObject : MonoBehaviour
         }
 
         /**마지막 위치를 기록한다...*/
-        else _lastExtendedLen = (HoldingPoint.transform.position - _datas[0].Tr.position).magnitude;
+        else _lastExtendedLen = (HoldingPoint.transform.position - _BoneData[0].Tr.position).magnitude;
 
         return false;
         #endregion
@@ -1198,8 +1198,8 @@ public sealed class PullableObject : MonoBehaviour
 
         for (int i=0; i<_dataCount-1; i++)
         {
-            ref BoneData curr = ref _datas[i];
-            ref BoneData next = ref _datas[i + 1];
+            ref BoneData curr = ref _BoneData[i];
+            ref BoneData next = ref _BoneData[i + 1];
 
             Vector3 currDir    = (next.Tr.position - curr.Tr.position).normalized;
             Quaternion rotQuat = GetQuatBetweenVector(currDir, curr.originDir, delta);
@@ -1226,8 +1226,8 @@ public sealed class PullableObject : MonoBehaviour
         /**모든 본들의 크기를 줄인다.....*/
         for( int i=0; i<_dataCount-1; i++ )
         {
-            ref BoneData curr = ref _datas[i];
-            ref BoneData next = ref _datas[i + 1];
+            ref BoneData curr = ref _BoneData[i];
+            ref BoneData next = ref _BoneData[i + 1];
 
             Vector3 currDir = (next.Tr.position - curr.Tr.position).normalized;
             next.Tr.position = curr.Tr.position + (currDir * curr.originLength * progressRatio);
@@ -1251,8 +1251,8 @@ public sealed class PullableObject : MonoBehaviour
         /**각 본들의 마지막 위치를 기록한다...*/
         for (int i = 0; i < _dataCount - 1; i++)
         {
-            ref BoneData curr = ref _datas[i];
-            ref BoneData next = ref _datas[i + 1];
+            ref BoneData curr = ref _BoneData[i];
+            ref BoneData next = ref _BoneData[i + 1];
 
             curr.LastDir = (next.Tr.position - curr.Tr.position).normalized;
             curr.LastPos = curr.Tr.position;
@@ -1268,7 +1268,7 @@ public sealed class PullableObject : MonoBehaviour
         int Count = BoneCount;
         for(int i=0; i<Count; i++){
 
-            ref BoneData data = ref _datas[i];
+            ref BoneData data = ref _BoneData[i];
             data.Tr.parent    = transform;
         }
 
@@ -1283,23 +1283,23 @@ public sealed class PullableObject : MonoBehaviour
         
         _fullyExtendedLen = MaxLength;
         _fullyExtendedDiv = (1f / _fullyExtendedLen);
-        _boneCountDiv     = (1f / (_datas.Length - 1));
+        _boneCountDiv     = (1f / (_BoneData.Length - 1));
         _brokenDiv        = (1f / _brokenTime);
 
 
         /**************************************
          *  본 정보 초기화....
          * ***/
-        if (_datas == null) {
+        if (_BoneData == null) {
 
-            _datas = new BoneData[10];
+            _BoneData = new BoneData[10];
         }
 
-        _dataCount = _datas.Length;
+        _dataCount = _BoneData.Length;
         for (int i = 0; i < _dataCount - 1; i++){
 
-            ref BoneData data = ref _datas[i];
-            ref BoneData next = ref _datas[i + 1];
+            ref BoneData data = ref _BoneData[i];
+            ref BoneData next = ref _BoneData[i + 1];
 
             /**연결이 끊겨있다면 마무리...*/
             if (data.Tr == null || next.Tr==null)
@@ -1363,7 +1363,7 @@ public sealed class PullableObject : MonoBehaviour
 
         for(int i=0; i<_dataCount; i++){
 
-            ref BoneData data = ref _datas[i];
+            ref BoneData data = ref _BoneData[i];
             LineRenderer.SetPosition(i, data.Tr.position);
         }
 
@@ -1381,23 +1381,23 @@ public sealed class PullableObject : MonoBehaviour
         if (newBoneTr == null) return;
 
         /**컨테이너가 유효하지 않다면 할당한다....*/
-        if(_datas==null){
+        if(_BoneData==null){
 
-            _datas = new BoneData[10];
+            _BoneData = new BoneData[10];
         }
 
         /**컨테이너의 공간이 부족하면 배로 할당한다....*/
-        if(_datas.Length < _dataCount+1){
+        if(_BoneData.Length < _dataCount+1){
 
             BoneData[] newDatas = new BoneData[_dataCount*2];
-            _datas.CopyTo(newDatas, 0);
-            _datas = newDatas;
+            _BoneData.CopyTo(newDatas, 0);
+            _BoneData = newDatas;
         }
 
         /*********************************************
          *   새로운 본을 삽입한다....
          * ****/
-        ref BoneData newBone = ref _datas[_dataCount++];
+        ref BoneData newBone = ref _BoneData[_dataCount++];
         newBone.Tr = newBoneTr;
 
         IsValid = false;
@@ -1410,8 +1410,8 @@ public sealed class PullableObject : MonoBehaviour
         if (removeBoneIndex < 0 || removeBoneIndex >= _dataCount) 
                 return;
 
-        ref BoneData last   = ref _datas[_dataCount-1];
-        ref BoneData remove = ref _datas[removeBoneIndex];
+        ref BoneData last   = ref _BoneData[_dataCount-1];
+        ref BoneData remove = ref _BoneData[removeBoneIndex];
         remove = last;
         _dataCount--;
 
@@ -1438,15 +1438,15 @@ public sealed class PullableObject : MonoBehaviour
         #region Omit
         if (_dataCount < 2) return;
 
-        ref BoneData rootBone    = ref _datas[0];
-        ref BoneData rootDirBone = ref _datas[1];
+        ref BoneData rootBone    = ref _BoneData[0];
+        ref BoneData rootDirBone = ref _BoneData[1];
 
         Vector3 rootDir = (rootDirBone.Tr.position - rootBone.Tr.position).normalized;
         for (int i = 1; i < _dataCount-1; i++)
         {
-            if (_datas[i].Tr == null) continue;
+            if (_BoneData[i].Tr == null) continue;
             
-            ref BoneData currBone = ref _datas[i];
+            ref BoneData currBone = ref _BoneData[i];
             Quaternion   rotQut   = GetQuatBetweenVector(currBone.originDir, rootDir);
             currBone.Tr.rotation  = (rotQut * currBone.OriginQuat);
         }
@@ -1456,31 +1456,31 @@ public sealed class PullableObject : MonoBehaviour
     public Vector3 GetBonePosition( int index )
     {
         #region Omit
-        if (_dataCount==0 || _datas==null) return Vector3.zero;  
+        if (_dataCount==0 || _BoneData==null) return Vector3.zero;  
 
         index = Mathf.Clamp(index, 0, _dataCount - 1);
-        return _datas[index].Tr.position;
+        return _BoneData[index].Tr.position;
         #endregion
     }
 
     public Transform GetBoneTransform( int index )
     {
         #region Omit
-        if (_dataCount == 0 || _datas == null) return null;
+        if (_dataCount == 0 || _BoneData == null) return null;
 
         index = Mathf.Clamp(index, 0, _dataCount - 1);
-        return _datas[index].Tr;
+        return _BoneData[index].Tr;
         #endregion
     }
 
     public Vector3 GetBoneDir(int index)
     {
         #region Omit
-        if (_dataCount == 0 || _datas == null) return Vector3.zero;
+        if (_dataCount == 0 || _BoneData == null) return Vector3.zero;
 
         index = Mathf.Clamp(index, 0, _dataCount - 2);
-        ref BoneData curr = ref _datas[index];
-        ref BoneData next = ref _datas[index+1];
+        ref BoneData curr = ref _BoneData[index];
+        ref BoneData next = ref _BoneData[index+1];
 
         if (curr.Tr == null || next.Tr == null) return Vector3.zero;
         return (next.Tr.position - curr.Tr.position).normalized;
@@ -1490,9 +1490,9 @@ public sealed class PullableObject : MonoBehaviour
     public float GetBoneLength(int index)
     {
         #region Omit
-        if (_dataCount == 0 || _datas == null) return 0f;
+        if (_dataCount == 0 || _BoneData == null) return 0f;
 
-        return _datas[index].originLength;
+        return _BoneData[index].originLength;
         #endregion
     }
 
@@ -1508,7 +1508,7 @@ public sealed class PullableObject : MonoBehaviour
         for (int i = 0; i < _dataCount - 1; i++)
         {
 
-            ref BoneData data = ref _datas[i];
+            ref BoneData data = ref _BoneData[i];
             float dst = (position - data.Tr.position).sqrMagnitude;
 
             /**가장 근접한 인덱스를 선택한다...*/
@@ -1520,7 +1520,7 @@ public sealed class PullableObject : MonoBehaviour
         }
 
         /**가장 근접한 위치의 본을 반환한다...*/
-        ref BoneData result = ref _datas[selectIdx];
+        ref BoneData result = ref _BoneData[selectIdx];
 
         return result.Tr.position;
         #endregion
@@ -1541,7 +1541,7 @@ public sealed class PullableObject : MonoBehaviour
          * *****/
         for (int i = 0; i < _dataCount - 1; i++){
 
-            ref BoneData data = ref _datas[i];
+            ref BoneData data = ref _BoneData[i];
             float dst         = (position - data.Tr.position).sqrMagnitude;
 
             /**가장 근접한 인덱스를 선택한다...*/
@@ -1553,8 +1553,8 @@ public sealed class PullableObject : MonoBehaviour
         }
 
         /**가장 근접한 위치의 본을 반환한다...*/
-        ref BoneData result = ref _datas[selectIdx];
-        ref BoneData resultDir = ref _datas[selectIdx + 1];
+        ref BoneData result = ref _BoneData[selectIdx];
+        ref BoneData resultDir = ref _BoneData[selectIdx + 1];
 
         return (resultDir.Tr.position - result.Tr.position).normalized;
         #endregion
@@ -1578,7 +1578,7 @@ public sealed class PullableObject : MonoBehaviour
          * *****/
         for(int i=0; i<_dataCount-1; i++){
 
-            ref BoneData data = ref _datas[i];
+            ref BoneData data = ref _BoneData[i];
             float        dst  = (position - data.Tr.position).sqrMagnitude;
 
             /**가장 근접한 인덱스를 선택한다...*/
@@ -1590,8 +1590,8 @@ public sealed class PullableObject : MonoBehaviour
         }
 
         /**가장 근접한 위치의 본을 반환한다...*/
-        ref BoneData result    = ref _datas[selectIdx];
-        ref BoneData resultDir = ref _datas[selectIdx+1];
+        ref BoneData result    = ref _BoneData[selectIdx];
+        ref BoneData resultDir = ref _BoneData[selectIdx+1];
 
         outPos = result.Tr.position;
         outDir = (resultDir.Tr.position - outPos).normalized;
