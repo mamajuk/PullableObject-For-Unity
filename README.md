@@ -16,7 +16,7 @@
 
 가장 먼저 해야할 일은 줄을 구성하는 모든 ```Transform```을 ```PullableObject``` 의 ```Datas``` 프로퍼티에 입력하는 것입니다. 단일 연결 구조(Single Chain)라면 최상위 ```Transform``` 만 추가한 후, ```Add all child bones under the RootBone``` 버튼을 눌러 자동으로 하위 본들을 등록할 수 있습니다. 만약 메시의 본들의 ```Transform``` 을 사용할 경우 ```캔디랩( Candy wrap )``` 현상이 발생할 수 있으므로, ```MeshRenderer``` 대신 ```LineRenderer```를 사용하는 방법을 고려해볼 수 있습니다. 
 
-줄 구성이 끝났다면, ```Holding Point``` 프로퍼티에 줄이 당겨질 위치의 ```GameObject``` 를 설정하면 줄이 해당 위치로 당겨지게 됩니다. 또한 ```C# Scripting``` 이나 ```Unity Editor Inspector``` 에서 각 줄의 상태가 변호할 때 호출되는 대리자를 활용해 유연하게 확장할 수도 있습니다.
+줄 구성이 끝났다면, ```Holding Point``` 프로퍼티에 줄이 당겨질 위치의 ```GameObject``` 를 설정하면 줄이 해당 위치로 당겨지게 됩니다. 또한 ```C# Scripting``` 이나 ```Unity Editor Inspector``` 에서 각 줄의 상태가 변화할 때 호출되는 대리자를 활용해 유연하게 확장할 수도 있습니다.
 
 ## Scripting Example
 ``` c#
